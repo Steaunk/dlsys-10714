@@ -97,8 +97,8 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     # BEGIN YOUR SOLUTION
     iterations = (y.size + batch - 1) // batch
     for i in range(iterations):
-        X_batch = ndl.Tensor(X[i * batch : (i+1) * batch, :])
-        y_batch = ndl.Tensor([[1 if y[j] == k else 0 for k in range(W2.shape[1])] for j in range(i * batch, (i+1) * batch)])
+        X_batch = ndl.Tensor(X[i * batch : (i+1) * batch, :], requires_grad=False)
+        y_batch = ndl.Tensor([[1 if y[j] == k else 0 for k in range(W2.shape[1])] for j in range(i * batch, (i+1) * batch)], requires_grad=False)
         loss = softmax_loss(ndl.relu(X_batch @ W1) @ W2, y_batch)
         loss.backward()
         W1 = ndl.Tensor(W1.realize_cached_data() - lr * W1.grad.realize_cached_data())
