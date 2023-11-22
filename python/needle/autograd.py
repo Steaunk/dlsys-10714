@@ -1,4 +1,5 @@
 """Core data structures."""
+import numpy as array_api
 import needle
 from .backend_numpy import Device, cpu, all_devices
 from typing import List, Optional, NamedTuple, Tuple, Union
@@ -13,7 +14,6 @@ TENSOR_COUNTER = 0
 
 # NOTE: we will import numpy as the array_api
 # as the backend for our computations, this line will change in later homeworks
-import numpy as array_api
 
 NDArray = numpy.ndarray
 
@@ -146,7 +146,7 @@ class Value:
         return value
 
     @classmethod
-    def make_from_op(cls, op: Op, inputs: List["Value"]):
+    def make_from_op(cs, op: Op, inputs: List["Value"]):
         value = cls.__new__(cls)
         value._init(op, inputs)
 
@@ -157,7 +157,7 @@ class Value:
         return value
 
 
-### Not needed in HW1
+# Not needed in HW1
 class TensorTuple(Value):
     """Represent a tuple of tensors.
 
@@ -216,7 +216,8 @@ class Tensor(Value):
                 )
         else:
             device = device if device else cpu()
-            cached_data = Tensor._array_from_numpy(array, device=device, dtype=dtype)
+            cached_data = Tensor._array_from_numpy(
+                array, device=device, dtype=dtype)
 
         self._init(
             None,
@@ -379,9 +380,21 @@ def compute_gradient_of_variables(output_tensor, out_grad):
     # Traverse graph in reverse topological order given the output_node that we are taking gradient wrt.
     reverse_topo_order = list(reversed(find_topo_sort([output_tensor])))
 
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    # BEGIN YOUR SOLUTION
+    for u in reverse_topo_order:
+        grad_u = sum_node_list(node_to_output_grads_list[u])
+        u.grad = grad_u
+        if u.op is None:
+            continue
+        partial_grads = u.op.gradient_as_tuple(grad_u, u)
+        for v, partial_grad in zip(u.inputs, partial_grads):
+            if v not in node_to_output_grads_list:
+                node_to_output_grads_list[v] = [partial_grad]
+            else:
+                node_to_output_grads_list[v].append(partial_grad)
+
+    # raise NotImplementedError()
+    # END YOUR SOLUTION
 
 
 def find_topo_sort(node_list: List[Value]) -> List[Value]:
@@ -392,16 +405,25 @@ def find_topo_sort(node_list: List[Value]) -> List[Value]:
     after all its predecessors are traversed due to post-order DFS, we get a topological
     sort.
     """
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    # BEGIN YOUR SOLUTION
+    visited = set()
+    topo_order = []
+    for node in node_list:
+        topo_sort_dfs(node, visited, topo_order)
+    return topo_order
+    # END YOUR SOLUTION
 
 
 def topo_sort_dfs(node, visited, topo_order):
     """Post-order DFS"""
-    ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
-    ### END YOUR SOLUTION
+    # BEGIN YOUR SOLUTION
+    if node in visited:
+        return
+    visited.add(node)
+    for u in node.inputs:
+        topo_sort_dfs(u, visited, topo_order)
+    topo_order.append(node)
+    # END YOUR SOLUTION
 
 
 ##############################

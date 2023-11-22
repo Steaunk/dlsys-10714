@@ -237,9 +237,12 @@ class Summation(TensorOp):
 
     def gradient(self, out_grad, node):
         # BEGIN YOUR SOLUTION
-        grad_shape = list(node.inputs[0].shape)
-        for axis in self.axes:
-            grad_shape[axis] = 1
+        if self.axes:
+            grad_shape = list(node.inputs[0].shape)
+            for axis in self.axes:
+                grad_shape[axis] = 1
+        else:
+            grad_shape = [1 for _ in range(len(node.inputs[0].shape))]
         return out_grad.reshape(grad_shape).broadcast_to(node.inputs[0].shape)
         # raise NotImplementedError()
         # END YOUR SOLUTION
@@ -258,7 +261,6 @@ class MatMul(TensorOp):
 
     def gradient(self, out_grad, node):
         # BEGIN YOUR SOLUTION
-
         lhs, rhs = node.inputs
         lgrad, rgrad = out_grad @ transpose(
             rhs), transpose(lhs) @ out_grad
@@ -298,12 +300,13 @@ def negate(a):
 class Log(TensorOp):
     def compute(self, a):
         # BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return array_api.log(a)
         # END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         # BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return out_grad / node.inputs[0]
+        # raise NotImplementedError()
         # END YOUR SOLUTION
 
 
@@ -314,12 +317,12 @@ def log(a):
 class Exp(TensorOp):
     def compute(self, a):
         # BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return array_api.exp(a)
         # END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         # BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return out_grad * exp(node.inputs[0])
         # END YOUR SOLUTION
 
 
@@ -330,12 +333,14 @@ def exp(a):
 class ReLU(TensorOp):
     def compute(self, a):
         # BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        # Implement ReLU
+        return array_api.maximum(a, 0)
         # END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         # BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        input = node.inputs[0].realize_cached_data()
+        return out_grad * (input > 0)
         # END YOUR SOLUTION
 
 

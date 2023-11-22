@@ -464,6 +464,15 @@ def gradient_check(f, *args, tol=1e-6, backward=False, **kwargs):
     assert error < tol
     return computed_grads
 
+# def test_log_backward():
+#     gradient_check(
+#         ndl.log, ndl.Tensor(np.abs(np.random.randn(5, 4)))
+#     )
+
+# def test_exp_backward():
+#     gradient_check(
+#         ndl.exp, ndl.Tensor(np.random.randn(5, 4))
+#     )
 
 def test_power_scalar_backward():
     gradient_check(
@@ -1006,6 +1015,7 @@ def test_nn_epoch_ndl():
     np.random.seed(0)
     W1 = ndl.Tensor(np.random.randn(X.shape[1], 100).astype(np.float32) / np.sqrt(100))
     W2 = ndl.Tensor(np.random.randn(100, 10).astype(np.float32) / np.sqrt(10))
+
     W1, W2 = nn_epoch(X, y, W1, W2, lr=0.2, batch=100)
     np.testing.assert_allclose(
         np.linalg.norm(W1.numpy()), 28.437788, rtol=1e-5, atol=1e-5
