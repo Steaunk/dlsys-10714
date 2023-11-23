@@ -181,9 +181,11 @@ def transpose(a, axes=None):
 class Reshape(TensorOp):
     def __init__(self, shape):
         self.shape = shape
+        print("init", shape)
 
     def compute(self, a):
         # BEGIN YOUR SOLUTION
+        print(self.shape, a.shape, a, type(a))
         return array_api.reshape(a, self.shape)
         # raise NotImplementedError()
         # END YOUR SOLUTION
@@ -210,13 +212,12 @@ class BroadcastTo(TensorOp):
 
     def gradient(self, out_grad, node):
         # BEGIN YOUR SOLUTION
-        ori_len = len(node.inputs[0].shape)
-        out_len = len(out_grad.shape)
-        shrink_dims = tuple(
-            range(min(ori_len, out_len), max(ori_len, out_len)))
-        shrink_dims += tuple(filter(
-            lambda i: out_grad.shape[i] != node.inputs[0].shape[i], range(min(ori_len, out_len))))
-        return summation(out_grad, axes=shrink_dims).reshape(node.inputs[0].shape)
+        shrink_dims = [i for i in range(len(out_grad.shape))]
+        for i, (a, b) in enumerate(zip(reversed(out_grad.shape), reversed(node.inputs[0].shape))):
+            if a == b:
+                shrink_dims[len(out_grad.shape)-i-1] = None
+        shrink_dims = tuple([i for i in shrink_dims if i is not None])
+        return out_grad.sum(tuple(shrink_dims)).reshape(node.inputs[0].shape)
         # raise NotImplementedError()
         # END YOUR SOLUTION
 
@@ -243,6 +244,7 @@ class Summation(TensorOp):
                 grad_shape[axis] = 1
         else:
             grad_shape = [1 for _ in range(len(node.inputs[0].shape))]
+        print(out_grad.shape, node.inputs[0].shape, grad_shape)
         return out_grad.reshape(grad_shape).broadcast_to(node.inputs[0].shape)
         # raise NotImplementedError()
         # END YOUR SOLUTION
