@@ -96,7 +96,6 @@ class Linear(Module):
 
     def forward(self, X: Tensor) -> Tensor:
         # BEGIN YOUR SOLUTION
-        print(X.shape, self.weight.shape, self.bias.shape)
         if self.bias:
             return X @ self.weight + self.bias
         else:
@@ -194,7 +193,6 @@ class LayerNorm1d(Module):
         vx = ((x - ex) ** 2).sum(axes=(1,)
                                  ).reshape((x.shape[0], 1, )).broadcast_to(x.shape) / x.shape[1]
         ans = weight * (x - ex) / (vx + self.eps)**0.5 + bias
-        print("end")
         return ans
         # END YOUR SOLUTION
 
