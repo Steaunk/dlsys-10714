@@ -96,10 +96,10 @@ class Linear(Module):
 
     def forward(self, X: Tensor) -> Tensor:
         # BEGIN YOUR SOLUTION
+        out = X @ self.weight
         if self.bias:
-            return X @ self.weight + self.bias
-        else:
-            return X @ self.weight
+            out += ops.broadcast_to(self.bias, out.shape)
+        return out
         # END YOUR SOLUTION
 
 
@@ -205,7 +205,7 @@ class Dropout(Module):
     def forward(self, x: Tensor) -> Tensor:
         # BEGIN YOUR SOLUTION
         if self.training:
-            return x * init.randb(*x.shape, p=self.p) / (1 - self.p)
+            return x * init.randb(*x.shape, p=1 - self.p) / (1 - self.p)
         else:
             return x
         # END YOUR SOLUTION

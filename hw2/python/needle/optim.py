@@ -20,16 +20,21 @@ class SGD(Optimizer):
         super().__init__(params)
         self.lr = lr
         self.momentum = momentum
+        print(momentum)
+        print(weight_decay)
         self.u = {}
         self.weight_decay = weight_decay
 
     def step(self):
-        # BEGIN YOUR SOLUTION
-        self.u = self.momentum * self.u + \
-            (1 - self.momentum) * self.params.grad
-        self.params.data -= self.lr * self.u
-        raise NotImplementedError()
-        # END YOUR SOLUTION
+        for param in self.params:
+            grad = ndl.Tensor(
+                param.grad.data, device=param.device, dtype=param.dtype)
+            grad = grad + self.weight_decay * param.data
+            if param not in self.u:
+                self.u[param] = ndl.zeros_like(param)
+            self.u[param] = self.momentum * self.u[param] + \
+                (1 - self.momentum) * grad
+            param.data = param.data - self.lr * self.u[param]
 
     def clip_grad_norm(self, max_norm=0.25):
         """
@@ -63,5 +68,19 @@ class Adam(Optimizer):
 
     def step(self):
         # BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.t += 1
+        for param in self.params:
+            grad = ndl.Tensor(
+                param.grad.data, device=param.device, dtype=param.dtype)
+            grad = grad + self.weight_decay * param.data
+            if param not in self.m:
+                self.m[param] = ndl.zeros_like(param)
+                self.v[param] = ndl.zeros_like(param)
+            self.m[param] = self.beta1 * self.m[param] + \
+                (1 - self.beta1) * grad
+            self.v[param] = self.beta2 * self.v[param] + \
+                (1 - self.beta2) * grad * grad
+            m_hat = self.m[param] / (1 - self.beta1**self.t)
+            v_hat = self.v[param] / (1 - self.beta2**self.t)
+            param.data = param.data - self.lr * m_hat / (v_hat**0.5 + self.eps)
         # END YOUR SOLUTION
